@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo de Autorização para Notificação via WhatsApp Vivace</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #25D366; /* Verde WhatsApp */
+            --accept-color: #27ae60;
+            --reject-color: #e74c3c;
+        }
+        
+        body {
+            background-image: url("vivace.png");
+            background-repeat: no-repeat; /* Evita repetição da imagem */
+            background-size: cover; /* Cobrir toda a área */
+            background-position: center; /* Centraliza a imagem */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .termo-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(37, 211, 102, 0.5);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .termo-content {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+            text-align: center;
+        }
+        
+        .signature-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-accept {
+            background-color: var(--accept-color);
+            color: white;
+        }
+        
+        .btn-reject {
+            background-color: var(--reject-color);
+            color: white;
+        }
+        
+        .btn-generate {
+            background-color: var(--secondary-color);
+            color: white;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .signature-status {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            min-height: 27px;
+        }
+        
+        .accepted {
+            color: var(--accept-color);
+        }
+        
+        .rejected {
+            color: var(--reject-color);
+        }
+        
+        .date-display {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .whatsapp-icon {
+            color: var(--secondary-color);
+            margin-right: 5px;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .termo-container, .termo-container * {
+                visibility: visible;
+            }
+            .termo-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .signature-buttons, .btn-generate {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="termo-container" id="termoContent">
+        <h1>TERMO DE AUTORIZAÇÃO PARA NOTIFICAÇÃO VIA WHATSAPP VIVACE CAMPO LIMPO</h1>
+        
+        <div class="form-group">
+            <label for="nome">Nome Completo do Morador:</label>
+            <input type="text" id="nome" placeholder="Digite seu nome completo">
+        </div>
+        
+        <div class="form-group">
+            <label for="apartamento">Número do Apartamento:</label>
+            <input type="text" id="apartamento" placeholder="Digite o número do apartamento">
+        </div>
+        
+        <div class="form-group">
+            <label for="whatsapp">Número de WhatsApp para Notificação:</label>
+            <input type="text" id="whatsapp" placeholder="(DDD) Número" data-mask="(00) 00000-0000">
+        </div>
+        
+        <div class="termo-content">
+            <p>Eu, <strong><span id="displayNome"></span></strong>, residente no condomínio Vivace Campo Limpo (Apartamento: <strong><span id="displayApartamento"></span></strong>), autorizo a administração do condomínio a enviar notificações via WhatsApp sobre as mercadorias recebidas na portaria, incluindo:</p>
+            
+            <ul>
+                <li>Descrição do item;</li>
+                <li>Data de recebimento;</li>
+                <li>Outras informações relevantes.</li>
+            </ul>
+            
+            <p>O número de WhatsApp cadastrado para recebimento é: <strong><span id="displayWhatsapp"></span></strong>.</p>
+            
+            <p>Estou ciente de que posso revogar esta autorização a qualquer momento, bastando comunicar formalmente a administração.</p>
+            
+            <div class="form-group">
+                <label for="cidade">Cidade:</label>
+                <input type="text" id="cidade" placeholder="Digite a cidade">
+            </div>
+            
+            <div id="displayData"></div>
+        </div>
+        
+        <div class="signature-section">
+            <div class="signature-buttons">
+                <button type="button" class="btn btn-accept" id="btnAccept">Aceito</button>
+                <button type="button" class="btn btn-reject" id="btnReject">Não Aceito</button>
+            </div>
+            
+            <div class="signature-status" id="signatureStatus"></div>
+            <div class="date-display" id="signatureDate"></div>
+        </div>
+    </div>
+    
+    <button type="button" class="btn btn-generate" id="btnGeneratePDF">
+        <span class="whatsapp-icon">📱</span> Gerar PDF do Termo
+    </button>
+    
+    <script>
+        // Inicializa o jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Atualiza os campos de exibição conforme o usuário digita
+            document.getElementById('nome').addEventListener('input', function() {
+                document.getElementById('displayNome').textContent = this.value;
+            });
+            
+            document.getElementById('apartamento').addEventListener('input', function() {
+                document.getElementById('displayApartamento').textContent = this.value;
+            });
+            
+            document.getElementById('whatsapp').addEventListener('input', function() {
+                document.getElementById('displayWhatsapp').textContent = this.value;
+            });
+            
+            document.getElementById('cidade').addEventListener('input', function() {
+                updateDateLocation();
+            });
+            
+            // Aplica máscara para WhatsApp
+            document.getElementById('whatsapp').addEventListener('input', function() {
+                const value = this.value.replace(/\D/g, '');
+                let result = '';
+                
+                if (value.length > 0) {
+                    result = '(' + value.substring(0, 2);
+                }
+                if (value.length > 2) {
+                    result += ') ' + value.substring(2, 7);
+                }
+                if (value.length > 7) {
+                    result += '-' + value.substring(7, 11);
+                }
+                
+                this.value = result;
+            });
+            
+            // Atualiza data e local
+            function updateDateLocation() {
+                const cidade = document.getElementById('cidade').value || '________________';
+                const now = new Date();
+                const dataFormatada = formatDate(now);
+                document.getElementById('displayData').innerHTML = 
+                    `<p><strong>${cidade}</strong>, ${dataFormatada}.</p>`;
+            }
+            
+            // Manipulação dos botões de assinatura
+            const btnAccept = document.getElementById('btnAccept');
+            const btnReject = document.getElementById('btnReject');
+            const signatureStatus = document.getElementById('signatureStatus');
+            const signatureDate = document.getElementById('signatureDate');
+            
+            btnAccept.addEventListener('click', function() {
+                signatureStatus.textContent = "Termo ACEITO pelo morador";
+                signatureStatus.className = "signature-status accepted";
+                const now = new Date();
+                signatureDate.textContent = `Em ${formatDate(now)} às ${formatTime(now)}`;
+                updateDateLocation();
+            });
+            
+            btnReject.addEventListener('click', function() {
+                signatureStatus.textContent = "Termo NÃO ACEITO pelo morador";
+                signatureStatus.className = "signature-status rejected";
+                const now = new Date();
+                signatureDate.textContent = `Em ${formatDate(now)} às ${formatTime(now)}`;
+                updateDateLocation();
+            });
+            
+            // Gerar PDF
+            document.getElementById('btnGeneratePDF').addEventListener('click', generatePDF);
+            
+            // Inicializa a data
+            updateDateLocation();
+        });
+        
+        function formatDate(date) {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+        
+        function formatTime(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+        
+        async function generatePDF() {
+            const termoContent = document.getElementById('termoContent');
+            const btnGenerate = document.getElementById('btnGeneratePDF');
+            
+            // Verifica se o termo foi assinado
+            const signatureStatus = document.getElementById('signatureStatus').textContent;
+            if (!signatureStatus) {
+                alert("Por favor, aceite ou rejeite o termo antes de gerar o PDF.");
+                return;
+            }
+            
+            // Verifica se todos os campos obrigatórios foram preenchidos
+            const nome = document.getElementById('nome').value;
+            const apartamento = document.getElementById('apartamento').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            
+            if (!nome || !apartamento || !whatsapp) {
+                alert("Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.");
+                return;
+            }
+            
+            btnGenerate.textContent = "Gerando PDF...";
+            btnGenerate.disabled = true;
+            
+            try {
+                // Usando html2canvas para capturar o conteúdo
+                const canvas = await html2canvas(termoContent, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; // largura A4 em mm
+                const pageHeight = 295; // altura A4 em mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Adiciona novas páginas se o conteúdo for muito longo
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save(`Termo_WhatsApp_${nome.replace(/\s+/g, '_')}.pdf`);
+            } catch (error) {
+                console.error("Erro ao gerar PDF:", error);
+                alert("Ocorreu um erro ao gerar o PDF. Por favor, tente novamente.");
+            } finally {
+                btnGenerate.innerHTML = '<span class="whatsapp-icon">📱</span> Gerar PDF do Termo';
+                btnGenerate.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
