@@ -6,6 +6,7 @@
     <title>Termo de Autorização para Notificação via WhatsApp Vivace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -154,6 +155,14 @@
             margin-right: 5px;
         }
         
+        .hash-info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            word-break: break-all;
+        }
+        
         @media print {
             body * {
                 visibility: hidden;
@@ -212,6 +221,11 @@
             </div>
             
             <div id="displayData"></div>
+            
+            <!-- Adicionando a seção de hash -->
+            <div class="hash-info">
+                <p>Identificador único do documento: <span id="documentHash"></span></p>
+            </div>
         </div>
         
         <div class="signature-section">
@@ -237,18 +251,22 @@
             // Atualiza os campos de exibição conforme o usuário digita
             document.getElementById('nome').addEventListener('input', function() {
                 document.getElementById('displayNome').textContent = this.value;
+                generateDocumentHash();
             });
             
             document.getElementById('apartamento').addEventListener('input', function() {
                 document.getElementById('displayApartamento').textContent = this.value;
+                generateDocumentHash();
             });
             
             document.getElementById('whatsapp').addEventListener('input', function() {
                 document.getElementById('displayWhatsapp').textContent = this.value;
+                generateDocumentHash();
             });
             
             document.getElementById('cidade').addEventListener('input', function() {
                 updateDateLocation();
+                generateDocumentHash();
             });
             
             // Aplica máscara para WhatsApp
@@ -290,6 +308,7 @@
                 const now = new Date();
                 signatureDate.textContent = `Em ${formatDate(now)} às ${formatTime(now)}`;
                 updateDateLocation();
+                generateDocumentHash();
             });
             
             btnReject.addEventListener('click', function() {
@@ -298,6 +317,7 @@
                 const now = new Date();
                 signatureDate.textContent = `Em ${formatDate(now)} às ${formatTime(now)}`;
                 updateDateLocation();
+                generateDocumentHash();
             });
             
             // Gerar PDF
@@ -305,6 +325,9 @@
             
             // Inicializa a data
             updateDateLocation();
+            
+            // Gera o hash inicial
+            generateDocumentHash();
         });
         
         function formatDate(date) {
@@ -318,6 +341,27 @@
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             return `${hours}:${minutes}`;
+        }
+        
+        // Função para gerar um hash único do documento
+        function generateDocumentHash() {
+            const nome = document.getElementById('nome').value || '';
+            const apartamento = document.getElementById('apartamento').value || '';
+            const whatsapp = document.getElementById('whatsapp').value || '';
+            const cidade = document.getElementById('cidade').value || '';
+            const signatureStatus = document.getElementById('signatureStatus').textContent || '';
+            const signatureDate = document.getElementById('signatureDate').textContent || '';
+            
+            // Cria uma string com todos os dados relevantes
+            const dataString = `${nome}:${apartamento}:${whatsapp}:${cidade}:${signatureStatus}:${signatureDate}:${new Date().getTime()}`;
+            
+            // Gera o hash SHA-256
+            const hash = sha256(dataString);
+            
+            // Exibe os primeiros 16 caracteres do hash (você pode ajustar isso)
+            document.getElementById('documentHash').textContent = hash.substring(0, 16);
+            
+            return hash;
         }
         
         async function generatePDF() {
@@ -340,6 +384,9 @@
                 alert("Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.");
                 return;
             }
+            
+            // Gera o hash final antes de criar o PDF
+            const finalHash = generateDocumentHash();
             
             btnGenerate.textContent = "Gerando PDF...";
             btnGenerate.disabled = true;
@@ -372,7 +419,14 @@
                     heightLeft -= pageHeight;
                 }
                 
-                pdf.save(`Termo_WhatsApp_${nome.replace(/\s+/g, '_')}.pdf`);
+                // Adiciona o hash como metadado (opcional)
+                pdf.setProperties({
+                    title: `Termo WhatsApp Vivace - ${nome}`,
+                    subject: `Termo de autorização para notificações via WhatsApp - Hash: ${finalHash.substring(0, 16)}`,
+                    creator: 'Vivace Campo Limpo'
+                });
+                
+                pdf.save(`Termo_WhatsApp_${nome.replace(/\s+/g, '_')}_${finalHash.substring(0, 8)}.pdf`);
             } catch (error) {
                 console.error("Erro ao gerar PDF:", error);
                 alert("Ocorreu um erro ao gerar o PDF. Por favor, tente novamente.");
